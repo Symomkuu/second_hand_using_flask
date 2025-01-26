@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- The title of our application is defined here -->
+    {% block title %}
+        {% if title %}
+            <title>{{ title }} - TreasureTwice</title>
+        {% else %}
+            <title>TreasureTwice</title>
+        {% endif %}
+    {% endblock %}
+
+    {{ pagedown.html_head() }}
+
+    <!-- Bootstrap CSS CDN -->
+    <link 
+        rel="stylesheet" 
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" 
+        integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" 
+        crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Scrollbar Custom CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+
+    <!-- Font Awesome JS -->
+    <script 
+        defer 
+        src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" 
+        integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" 
+        crossorigin="anonymous">
+    </script>
+    <script 
+        defer 
+        src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" 
+        integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" 
+        crossorigin="anonymous">
+    </script>
+
+    <!-- intl-tel-input -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/16.0.4/css/intlTelInput.css">
+
+    <!--LeafletJS files-->
+    <link 
+        rel="stylesheet" 
+        href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" 
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""/>
+    <script 
+        src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" 
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" 
+        crossorigin="">
+    </script>
+    <!-- Add this to your base.html in the <head> section -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    
+</head>
+<body>
+    {% block navbar %}
+        {% if current_user.is_authenticated %}
+            <div class="wrapper">
+                <!-- Sidebar  -->
+                <nav id="sidebar">
+
+                    {% if current_user.type == 'customer' %}
+                        <div class="sidebar-header">
+                            <h3>Customer</h3>
+                        </div>
+
+                        <ul class="list-unstyled components">
+                            <li class="active">
+                                <a href="{{ url_for('dashboard_customer_checkout') }}">Checkout</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('dashboard_customer') }}">Purchase History</a>
+                            </li>                            
+                        </ul>
+                    {% endif %}
+
+                    <!-- Sidebar seen by vendor -->
+                    {% if current_user.type == 'vendor' %}
+                        <div class="sidebar-header">
+                            <h3>Vendor</h3>
+                        </div>
+
+                        <ul class="list-unstyled components">
+                            <li class="active">
+                                <a href="{{ url_for('dashboard_vendor') }}">Add product</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('dashboard_vendor_all_products') }}">All products</a>
+                            </li>
+                        </ul>
+                    {% endif %}
+                    <!-- End of vendor sidebar -->
+
+                    <!-- Sidebar as seen by admin -->
+                    {% if current_user.type == 'admin' %}
+                        <div class="sidebar-header">
+                            <h3>Dashboard</h3>
+                        </div>
+
+                        <ul class="list-unstyled components">
+                            <li class="active">
+                                <a href=" {{ url_for('dashboard_admin') }} ">Register Vendor</a>
+                            </li>
+                            <li class="active">
+                                <a href=" {{ url_for('admin_all_products') }} ">View all products</a>
+                            </li>
+                            <li class="active">
+                                <a href=" {{ url_for('admin_all_customers') }} ">View all Customers</a>
+                            </li>
+                        </ul>
+                    {% endif %}
+                    <!-- End of admin sidebar -->
+
+                    <ul class="list-unstyled CTAs">
+                        <li>
+                            <a href="#" class="download not-active">Delete Account</a>
+                        </li>
+                        <li>
+                            <a href="#" class="article not-active">2FA</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Page Content  -->
+                <div id="content">
+
+                    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                        <div class="container-fluid">
+
+                            <button type="button" id="sidebarCollapse" class="btn btn-info">
+                                <i class="fas fa-align-left"></i>
+                                <span>Toggle Sidebar</span>
+                            </button>
+                            <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                                <i class="fas fa-align-justify"></i>
+                            </button>
+
+                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                <ul class="nav navbar-nav ml-auto">                                    
+                                    <li class="nav-item">
+                                        <a class="nav-link not-active" href="#">{{ current_user.username }}</a>
+                                    </li>
+                                    <li class="nav-item active">
+                                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
+
+                    {% block current_user_content %}
+
+                    {% endblock %}
+                    
+                </div>
+            </div>
+        {% else %}
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container">
+
+                    <a class="navbar-brand" href=" {{ url_for('shop') }} "><span class="shop-logo">TS</span> TreasureTwice</a>
+                    <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="fas fa-align-justify"></i>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="nav navbar-nav ml-auto">
+                            <li class="nav-item active">
+                                <a class="nav-link" href="{{ url_for('dashboard_customer_cart_items') }}">Cart ({{ num_cart_items }})</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        {% endif %}
+    {% endblock %}
+
+    {% block content %}
+        <div class="container">      
+            <!-- Contents of all our pages will go here -->
+            {% block app_content %}{% endblock %}
+        </div>
+        
+        {% if current_user.is_anonymous %}
+            <!-- Footer -->
+            <footer class="bg-gradient text-dark" style="background-color: black;">
+                <div class="container py-4">
+                <div class="row py-5">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                    <h6 class="text-uppercase mb-3">Customer services</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li><a class="footer-link text-white" href="#!">Help &amp; Contact Us</a></li>
+                        <li><a class="footer-link text-white" href="#!">Returns &amp; Refunds</a></li>
+                        <li><a class="footer-link text-white" href="#!">Online Stores</a></li>
+                        <li><a class="footer-link text-white" href="#!">Terms &amp; Conditions</a></li>
+                    </ul>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                    <h6 class="text-uppercase mb-3">Company</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li><a class="footer-link text-white" href="#!">What We Do</a></li>
+                        <li><a class="footer-link text-white" href="#!">Available Services</a></li>
+                        <li><a class="footer-link text-white" href="#!">Latest Posts</a></li>
+                        <li><a class="footer-link text-white" href="#!">FAQs</a></li>
+                    </ul>
+                    </div>
+                    <div class="col-md-4">
+                    <h6 class="text-uppercase mb-3">Social media</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li><a class="footer-link text-white" href="#!">Twitter</a></li>
+                        <li><a class="footer-link text-white" href="#!">Instagram</a></li>
+                        <li><a class="footer-link text-white" href="#!">Tumblr</a></li>
+                        <li><a class="footer-link text-white" href="#!">Pinterest</a></li>
+                    </ul>
+                    </div>
+                </div>
+                <div class="border-top pt-4" style="border-color: #1d1d1d !important">
+                    <div class="row">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="small text-muted mb-0">&copy; {{ moment().format('YYYY') }} All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p class="small text-muted mb-0">&#128150; from <a class="text-white reset-anchor" href="#">TreasureTwice</a></p>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </footer>
+        {% endif %}
+    {% endblock %}
+
+    {% block scripts %}
+        <!-- jQuery CDN - Slim version (=without AJAX) -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <!-- Popper.JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+        <!-- Bootstrap JS -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+        <!-- jQuery Custom Scroller CDN -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+        
+        <!-- Custom JS -->
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $("#sidebar").mCustomScrollbar({
+                    theme: "minimal"
+                });
+
+                $('#sidebarCollapse').on('click', function () {
+                    $('#sidebar, #content').toggleClass('active');
+                    $('.collapse.in').toggleClass('in');
+                    $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+                });
+            });
+        </script>
+
+         <!-- intl-tel-input -->
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/16.0.4/js/intlTelInput-jquery.min.js"></script>
+
+        <!-- Phone number -->
+        <script>
+            $("#phone").css({position: 'absolute', top: '-9999px', left: '-9999px'});
+            $("#phone").parent().append('<div><input type="tel" id="_phone"></div>');
+            $("#_phone").intlTelInput({
+                separateDialCode: true,
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/16.0.4/js/utils.js",
+            });
+            $("#_phone").intlTelInput("setNumber", $('#phone').val());
+            $('#_phone').blur(function() {
+                $('#phone').val($('#_phone').intlTelInput("getNumber"));
+            });
+        </script>
+
+        <!-- Momentjs -->
+        {{ moment.include_moment() }}
+
+        <!-- Map -->
+        <!-- <script>
+            var map = L.map('map').setView([{{lat}}, {{lon}}], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors'}).addTo(map);
+            {{markers|safe}}
+        </script> -->
+
+        <!-- Google maps API -->
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places&callback=initMap"></script>
+
+        
+
+    {% endblock %}
+</body>
+
+</html>

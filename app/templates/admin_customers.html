@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+    All Customers
+{% endblock %}
+
+{% block current_user_content %}
+    {% if current_user.type == 'admin' %}
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Flash message -->
+                {% include '_flash_message.html' %}
+                <!-- End of flash message -->
+
+                <h1 class="text-center mb-4">All Customers</h1>
+
+                <!-- Search Form -->
+                <form method="GET" action="{{ url_for('admin_all_customers') }}" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search" placeholder="Search by username or email" value="{{ search_query }}">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Customers Table -->
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Avatar</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Date Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if customers %}
+                                {% for customer in customers %}
+                                <tr>
+                                    <td> {{ customer.id }} </td>
+                                    <td> <img src="{{ customer.avatar(36) }}" alt=""> </td>
+                                    <td> {{ customer.username }} </td>
+                                    <td> {{ customer.email }} </td>
+                                    <td> {{ customer.phone }} </td>
+                                    <td> {{ moment(customer.registered_at).format('LLL') }} </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No customers available</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>     
+        </div>
+    {% endif %}
+
+    {% if current_user.type != 'admin' %}
+        <p>You do not have access to this page.</p>
+        {% if current_user.type == 'vendor' %}
+            <p><a href="{{ url_for('dashboard_vendor') }}">Return to your dashboard</a></p>
+        {% endif %}
+        {% if current_user.type == 'customer' %}
+            <p><a href="{{ url_for('dashboard_customer') }}">Return to your dashboard</a></p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

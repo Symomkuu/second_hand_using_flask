@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Vendors and Products
+{% endblock %}
+
+{% block current_user_content %}
+    <!-- Only visible to admin -->
+    {% if current_user.type == 'admin' %}
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Flash message -->
+                {% include '_flash_message.html' %}
+                <!-- End of flash message -->
+
+                <h1 class="text-center mb-4">Vendors and Their Products</h1>
+
+                <!-- Search Form -->
+                <form method="GET" action="{{ url_for('admin_all_products') }}">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Search products..." name="search" value="{{ search }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit">Search</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Vendor Name</th>
+                                <th>Shop Name</th>
+                                <th>Product ID</th>
+                                <th>Product Name</th>
+                                <th>Price</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if products %}
+                                {% for product in products %}
+                                <tr>
+                                    <td>{{ product.vendor.username }}</td>
+                                    <td>{{ product.vendor.shop_name }}</td>
+                                    <td>{{ product.id }}</td>
+                                    <td>{{ product.name }}</td>
+                                    <td>${{ product.price }}</td>
+                                    <td>{{ product.description }}</td>
+                                    {% if product.allow_status %}
+                                        <td>Allowed</td>
+                                    {% else %}
+                                        <td>Not Allowed</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">No vendors or products available</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>     
+        </div>
+    {% endif %}
+    <!-- End of admin -->
+{% endblock %}
+
+{% if current_user.type != 'admin' %}
+    <p>You do not have access to this page.</p>
+   {% if current_user.type == 'vendor' %}
+    <p>
+        <a href="{{ url_for('dashboard_vendor') }}">Return to your dashboard</a>.
+    </p>
+   {% endif %}
+   {% if current_user.type == 'customer' %}
+    <p>
+        <a href="{{ url_for('dashboard_customer') }}">Return to your dashboard</a>.
+    </p>
+   {% endif %}
+{% endif %}

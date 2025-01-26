@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+<!-- Only seen by admin -->
+{% if current_user.type == 'customer' %}
+    {% block current_user_content %}
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Flash message -->
+                {% include '_flash_message.html' %}
+                <!-- End of flash message -->
+    
+                <h1>{{ title }}</h1>
+    
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Cost</th>
+                                <th>Payment Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in paid_products %}
+                                <tr>
+                                    <td>{{product.name}}</td>
+                                    <td>{{product.quantity}}</td>
+                                    <td>{{ product.price }}</td>
+                                    <td>{{ product.cost }}</td>
+                                    <td>{{ product.payment_status }}</td>
+                                    <td>{{ moment(product.purchased_at).format('lll') }}</td>
+                                </tr>
+                            {% endfor %}                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>    
+        </div>
+    {% endblock %}
+{% endif %}
+<!-- End of admin -->
+
+{% if current_user.type != 'customer' %}
+    <p>You do not have access to this page.</p>
+   {% if current_user.type == 'vendor' %}
+    <p>
+        <a href="{{ url_for('dashboard_vendor') }}">Return to your dashboard</a>.
+    </p>
+   {% endif %}
+   {% if current_user.type == 'admin' %}
+    <p>
+        <a href="{{ url_for('dashboard_admin') }}">Return to your dashboard</a>.
+    </p>
+   {% endif %}
+{% endif %}

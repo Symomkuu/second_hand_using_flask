@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+<!-- Only seen by admin -->
+{% if current_user.type == 'vendor' %}
+    {% block current_user_content %}
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Flash message -->
+                {% include '_flash_message.html' %}
+                <!-- End of flash message -->
+    
+                <h1>{{ title }}</h1>
+    
+                <p>
+                    <div class="my-form">
+                        {{ wtf.quick_form(form) }}
+                    </div>
+                </p>
+            </div>   
+            <div class="col-md-6">
+                <!-- Empty col -->
+            </div>     
+        </div>
+    {% endblock %}
+{% endif %}
+{% if current_user.type != 'vendor' %}
+    <p>You do not have access to this page.</p>
+   {% if current_user.type == 'admin' %}
+    <p>
+        <a href="{{ url_for('dashboard_admin') }}">Return to your dashboard</a>.
+    </p>
+   {% endif %}
+   {% if current_user.type == 'customer' %}
+    <p>
+        <a href="{{ url_for('dashboard_customer') }}">Return to your dashboard</a>.
+    </p>
+   {% endif %}
+{% endif %}
+<!-- End of admin -->
